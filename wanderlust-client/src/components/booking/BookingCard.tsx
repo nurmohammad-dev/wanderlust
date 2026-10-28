@@ -4,6 +4,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { IDestination } from "@/lib/types/destinations";
 import { authClient } from "@/lib/auth-client";
+import React from "react";
 
 const perks = [
   "Free cancellation up to 7 days",
@@ -16,7 +17,7 @@ const BookingCard = ({ destination }: { destination: IDestination }) => {
   const { data: session } = authClient.useSession();
   const user = session?.user;
 
-  const handleBooking = async (e) => {
+  const handleBooking = async (e:React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const departureDate = e.target.departureDate.value;
     // console.log("BookingCard handleBooking:", departureDate);
@@ -29,7 +30,7 @@ const BookingCard = ({ destination }: { destination: IDestination }) => {
       bookingDate: new Date(),
     };
     // console.log(data);
-    const res = await fetch("http://localhost:8000/booking", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/booking`, {
       method: "POST",
       headers: {
         "Content-type": "application/json",

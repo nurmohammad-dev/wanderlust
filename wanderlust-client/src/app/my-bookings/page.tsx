@@ -16,7 +16,7 @@ const MyBookingsPage = async () => {
 
   let bookings: IBooking[] = [];
   try {
-    const res = await fetch(`http://localhost:8000/my-bookings/${user.email}`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/my-bookings/${user.email}`);
     if (!res.ok) throw new Error(`Failed to fetch bookings: ${res.status}`);
     if (!res.ok) throw new Error(`Failed to fetch bookings: ${res.status}`);
     bookings = await res.json();

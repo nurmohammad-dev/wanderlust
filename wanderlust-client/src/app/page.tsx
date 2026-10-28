@@ -1,18 +1,17 @@
 import { Banner } from "@/components/home/banner";
 import { CtaSection } from "@/components/home/cta";
+import Featured from "@/components/home/featured";
 import { Testimonials } from "@/components/home/testimonials";
 import { WhyChooseUs } from "@/components/home/why-choose-us";
 
 export default function Home() {
   return (
-    <div className="flex min-h-svh flex-col">
-    
-      <div className="px-3 lg:px-6">
-        <Banner />
-      </div>
+ <main>
+      <Banner />
+      <Featured />
       <WhyChooseUs />
       <Testimonials />
       <CtaSection />
-    </div>
+ </main>    
   );
 }

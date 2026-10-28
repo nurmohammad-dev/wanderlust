@@ -2,13 +2,13 @@ import express from 'express';
 import { MongoClient, ObjectId } from 'mongodb';
 import 'dotenv/config'
 import cors from 'cors'
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 
 const app = express ()
 const PORT = 8000
 
 app.use(cors())
 app.use(express.json())
-
 const client = new MongoClient(process.env.MONGODB_URI);
 
 export async function connectToMongoDB() {
@@ -26,8 +26,39 @@ const db = mongoClient.db("wanderlust-db")
 const destinationCollection = db.collection("destination")
 const bookingCollection = db.collection("bookings")
 
-//http://localhost:8000/add-destination
-app.post('/add-destination', async(req, res) => {
+//middleware
+const VerifyToken= async(req, res, next) => {
+    const authHeader = req.headers.authorization
+    // console.log(authHeader)
+    if(!authHeader){
+        return res.status(401).send({message: "Unauthorized access"})
+    }
+    const token = authHeader.split(" ")[1]
+    if(!token) {
+        return res.status(401).send({message: "Unauthorized access"});
+    }
+
+    const JWKS = createRemoteJWKSet(
+     new URL(`${process.env.CLIENT_URL}/api/auth/jwks`),
+   )
+    try {
+        const {payload} = await jwtVerify(token, JWKS);
+        next();
+    }
+
+    catch(error) {
+        return res.status(401).send({message: "Unauthorized access"})
+    }
+
+    // if(authHeader !== "user logged in"){
+    //     return res.status(401).send({message: "Unauthorized access"})
+    // }
+    //console.log("I am middleware")
+    // next()
+}
+
+
+app.post('/add-destination', VerifyToken, async(req, res) => {
     const data = req.body
     const result = await destinationCollection.insertOne(data)
     console.log(result)
@@ -40,13 +71,19 @@ app.get('/destinations', async(req, res) => {
     res.send(result)
 })
 
-app.get('/destination/:id', async(req, res) => {
+
+app.get('/featured-destinations', async(req, res) => {
+    const result = await destinationCollection.find().limit(5).toArray()
+    res.send(result)
+})
+
+app.get('/destination/:id', VerifyToken, async(req, res) => {
     const {id} = req.params
     const result = await destinationCollection.findOne({_id: new ObjectId(id)})
     res.send(result)
 })
 
-app.patch('/destination/:id', async(req, res) => {
+app.patch('/destination/:id', VerifyToken, async(req, res) => {
     const {id} = req.params
     const updatedData = req.body
     const result = await destinationCollection.updateOne(
@@ -65,7 +102,6 @@ app.delete('/destination/:id', async(req, res) => {
 })
 
 
-//http://localhost:8000/booking/
 app.post('/booking', async(req, res) => {
     const data = req.body
     const result = await bookingCollection.insertOne(data);
@@ -74,7 +110,6 @@ app.post('/booking', async(req, res) => {
 })
 
 
-//http://localhost:8000/my-bookings/
 app.get('/my-bookings/:email', async(req, res) => {
     const {email} = req.params
     const result = await bookingCollection.find({email:email}).toArray();
@@ -98,3 +133,5 @@ app.get('/', (req, res) => {
 app.listen(PORT, ()=> {
     console.log(`Server is running at ${PORT}`)
 })
+
+export default app

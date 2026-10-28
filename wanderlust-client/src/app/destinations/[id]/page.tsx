@@ -13,6 +13,7 @@ import { IDestination } from "@/lib/types/destinations";
 import EditDestinationDialog from "@/components/destination/EditDestinationDialog";
 import DeleteDestinationDialog from "@/components/destination/DeleteDestinationDialog";
 import BookingCard from "@/components/booking/BookingCard";
+import { getTokenFromServer } from "@/lib/getTokenFromServer";
 
 
 const highlights = [
@@ -42,7 +43,19 @@ const DestinationDetailsPage = async ({
 }) => {
   const { id } = await params;
 
-  const res = await fetch(`http://localhost:8000/destination/${id}`);
+  // const jwtToken = await auth.api.getToken({
+  //   headers: await headers()
+  // });
+
+  // const token = jwtToken?.token;
+
+  const token = await getTokenFromServer();
+
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/destination/${id}`, {
+    headers: {
+      authorization: `Bearer ${token}`,
+    }
+  });
   if (!res.ok) notFound();
   const destination: IDestination = await res.json();
 

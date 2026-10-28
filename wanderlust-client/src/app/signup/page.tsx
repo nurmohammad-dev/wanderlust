@@ -1,44 +1,47 @@
-'use client'
-import { Button } from "@/components/ui/button"
+"use client";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { authClient } from "@/lib/auth-client"
-import Link from "next/link"
-import { redirect } from "next/navigation"
-import React from "react"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import React from "react";
 
-export default function SignUpPage(){
+export default function SignUpPage() {
+  const handleEmailSignUp = async (e: React.SubmitEvent<HTMLElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const user = Object.fromEntries(formData.entries()) as {
+      name: string;
+      image: string;
+      email: string;
+      password: string;
+    };
+    // console.log(user)
+    const { data, error } = await authClient.signUp.email({
+      ...user,
+    });
 
-    const handleEmailSignUp = async(e:React.SubmitEvent<HTMLElement>) => {
-        e.preventDefault()
-        const formData = new FormData(e.target)
-        const user = Object.fromEntries(formData.entries()) as {name:string, image:string, email:string, password:string}
-        // console.log(user)
-        const { data, error } = await authClient.signUp.email({
-            ...user,
-    })
-
-    if(data) {
-        // console.log(data)
-        redirect('/')
+    if (data) {
+      // console.log(data)
+      redirect("/");
     }
 
-    if(error)
-        console.log(error)
-    }
+    if (error) console.log(error);
+  };
 
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto my-10">
@@ -134,5 +137,5 @@ export default function SignUpPage(){
         and <a href="#">Privacy Policy</a>.
       </FieldDescription>
     </div>
-  )
+  );
 }
